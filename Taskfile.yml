@@ -1,0 +1,204 @@
+version: "3"
+
+output: prefixed
+env:
+  IMAGES_BACKUP_DIRI: '{{.IMAGES_BACKUP_DIR | default "./backups"}}'
+
+tasks:
+  start-zmk:
+    cmds:
+      - touch ./.user_history
+      - docker compose up -d
+      - task perms # create the clangd index dir
+
+  west-reinit:
+    cmd: docker exec zmk bash -c 'rm -rf .west && west init -l config'
+
+  west-update:
+    cmd: docker exec zmk bash -c 'git config --global --add safe.directory "*" && west update && west zephyr-export'
+
+  build-image:
+    cmd: |
+      docker compose build
+      docker save -o "$IMAGE_BACKUP_DIR/zmkx86.4.4.tar" zmk-dev-x86:4.4
+      # docker save -o "$IMAGE_BACKUP_DIR/zmkx86.4.1.tar" zmk-dev-x86:4.1
+      # docker save -o "$IMAGE_BACKUP_DIR/zmk.4.1.tar" zmk-dev-arm:4.1
+
+  load-image:
+    cmd: docker load --input '$IMAGE_BACKUP_DIR/zmkx86.4.4.tar'
+    # cmd: docker load --input "$IMAGE_BACKUP_DIR/zmk.4.4.tar"
+    # cmd: docker load --input "$IMAGE_BACKUP_DIR/zmkx86.4.1.tar"
+
+  git-file-mode-false:
+    cmd: |
+      for dir in */; do
+        if [ -d "$dir/.git" ]; then
+            echo "Updating: $dir"
+            git -C "$dir" config core.fileMode false
+        fi
+      done;
+      for dir in ./modules/**/*; do
+        if [ -d "$dir/.git" ]; then
+            echo "Updating: $dir"
+            git -C "$dir" config core.fileMode false
+        fi
+      done
+
+  wupdate:
+    cmd: docker exec zmk bash --login -c 'west update'
+
+  build:
+    desc: "Build both left and right halves concurrently"
+    deps: [left, right]
+    cmd: task keymap-svg
+
+  perms:
+    cmds:
+      - echo "Perms"
+      - chown -R ${USER}:${USER} .
+      - docker exec zmk bash --login -c 'mkdir -p build/{left,right}/.cache/clangd/index'
+
+  rgb-custom-patch:
+    cmd: patch --forward -d ./zmk -p1 <  zmk-nice-oled/zmk-rgb-underglow.patch || true
+
+  clean:
+    cmd: rm -rf build
+    # cmd: docker exec zmk bash --login -c 'mkdir -p build/{left,right}/.cache/clangd/index && chmod -R 777 build'
+
+  right:
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/right -p -b nice_nano//zmk -- -DZMK_CONFIG=/workspaces/zmk-config/config -DSHIELD="corne_right eyelash_corne_left"'
+    #cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/right -p -b nice_nano_v2 -- -DZMK_CONFIG=/workspaces/zmk-config/config -DSHIELD="corne_right nice_oled "'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/right -p -b nice_nano_v2 -- -DZMK_CONFIG=/workspaces/zmk-config/config -DSHIELD="corne_right nice_oled oled_adapter_pro_micro_128x32"'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/right -p -b nice_nano//zmk -- -DZMK_CONFIG=~/zmk-for-corne/config -DSHIELD="corne_right nice_oled" -DZEPHYR_SDK_INSTALL_DIR=~/zephyr-sdk-0.17.0 -DZEPHYR_SDK_VERSION=0.17.0'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/right -p -b nice_nano//zmk -- -DZMK_CONFIG=${HOME}/zmk-for-corne/config -DSHIELD="corne_right"'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/right -p -b nice_nano//zmk -- -DZMK_CONFIG=/workspaces/zmk-config/config -DSHIELD="corne_right"'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/right -p -b nice_nano//zmk -- -DZMK_CONFIG=${HOME}/zmk-for-corne/config -DSHIELD="corne_right nice_oled"'
+    cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/right -p -b nice_nano//zmk -- -DZMK_CONFIG=${HOME}/zmk-for-corne/config -DSHIELD="corne_right nice_oled"' # -DZMK_EXTRA_MODULES=${HOME}/zmk-for-corne/zmk-dual-keypress-event'
+
+  left:
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/left -p -b nice_nano//zmk -S studio-rpc-usb-uart -- -DZMK_CONFIG=/workspaces/zmk-config/config -DSHIELD="corne_left  eyelash_corne_right"'
+    #cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/left -p -b nice_nano_v2 -S studio-rpc-usb-uart -- -DZMK_CONFIG=/workspaces/zmk-config/config -DSHIELD="corne_left nice_oled"'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/left -p -b nice_nano//zmk -S studio-rpc-usb-uart -S zmk-usb-logging -- -DZMK_CONFIG=~/zmk-for-corne/config -DSHIELD="corne_left nice_oled" -DZEPHYR_SDK_INSTALL_DIR=~/zephyr-sdk-0.17.0 -DZEPHYR_SDK_VERSION=0.17.0'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/left -p -b nice_nano//zmk -S studio-rpc-usb-uart -- -DZMK_CONFIG=${HOME}/zmk-for-corne/config -DSHIELD="corne_left"'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/left -p -b nice_nano//zmk -S studio-rpc-usb-uart -S zmk-usb-logging -- -DZMK_CONFIG=${HOME}/zmk-for-corne/config -DSHIELD="corne_left nice_oled"'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/left -p -b nice_nano//zmk -S studio-rpc-usb-uart -- -DZMK_CONFIG=/workspaces/zmk-config/config -DSHIELD="corne_left"'
+    # cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/left -p -b nice_nano//zmk -S studio-rpc-usb-uart -- -DZMK_CONFIG=${HOME}/zmk-for-corne/config -DSHIELD="corne_left nice_oled"'
+    cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/left -p -b nice_nano//zmk -S studio-rpc-usb-uart -- -DZMK_CONFIG=${HOME}/zmk-for-corne/config -DSHIELD="corne_left nice_oled"'
+
+  reset:
+    cmd: docker exec zmk bash --login -c 'west build -s zmk/app -d build/reset -p -b nice_nano//zmk -- -DZMK_CONFIG=${HOME}/zmk-for-corne/config -DSHIELD="settings_reset"'
+
+  restore-left:
+    cmd: |
+      until cp build.4.4/left/zephyr/zmk.uf2 /media/${USER}/NICENANO; do
+        echo "Flash failed, retrying in 1 second..."
+        sleep 1
+      done;
+
+  restore-right:
+    cmd: |
+      until cp build.4.4/right/zephyr/zmk.uf2 /media/${USER}/NICENANO; do
+        echo "Flash failed, retrying in 1 second..."
+        sleep 1
+      done
+
+  task-restore:
+    cmd: |
+      if [[ -z "{{.CLI_ARGS}}" ]]; then
+        task restore-left
+        echo "Left flashed !"
+        sleep 5
+      fi
+      task restore-right
+  # flash-left:
+  #   cmd: cp build/left/zephyr/zmk.uf2 /media/${USER}/NICENANO
+  #
+  # flash-right:
+  #   cmd: cp build/right/zephyr/zmk.uf2 /media/${USER}/NICENANO
+
+  flash-left:
+    cmd: |
+      until cp build/left/zephyr/zmk.uf2 /media/${USER}/NICENANO; do
+        echo "Flash failed, retrying in 1 second..."
+        sleep 1
+      done
+
+  flash-right:
+    cmd: |
+      until cp build/right/zephyr/zmk.uf2 /media/${USER}/NICENANO; do
+        echo "Flash failed, retrying in 1 second..."
+        sleep 1
+      done
+
+  flash-reset:
+    cmd: |
+      until cp build/reset/zephyr/zmk.uf2 /media/${USER}/NICENANO; do
+        echo "Flash failed, retrying in 1 second..."
+        sleep 1
+      done
+
+  flash-left-fallback:
+    cmd: |
+      task flash-left
+      echo 'Will flash restore in 10sec'
+      countdown=10
+
+      while [ "$countdown" -gt 0 ]; do
+          echo "$countdown"
+          sleep 1
+          ((countdown--))
+      done
+      task restore-left
+      echo 'Repeat: Will flash restore in 15sec'
+      countdown=15
+
+      while [ "$countdown" -gt 0 ]; do
+          echo "$countdown"
+          sleep 1
+          ((countdown--))
+      done
+      task restore-left
+      # echo "Proceed? (y/n)"
+      # read -r key
+      #
+      # case $key in
+      #     y|Y)
+      #         task restore
+      #         ;;
+      #     n|N)
+      #         echo "Not flashing restore"
+      #         exit 0
+      #         ;;
+      #     *)
+      #         echo "Invalid input. Please press 'y' or 'n'."
+      #         ;;
+      # esac
+  flash-right-fallback:
+    cmd: |
+      task flash-right
+      echo 'Will flash restore in 10sec'
+      countdown=10
+
+      while [ "$countdown" -gt 0 ]; do
+          echo "$countdown"
+          sleep 1
+          ((countdown--))
+      done
+      task restore-right;
+      echo 'Repeat: Will flash restore in 15sec'
+      countdown=15
+
+      while [ "$countdown" -gt 0 ]; do
+          echo "$countdown"
+          sleep 1
+          ((countdown--))
+      done
+      task restore-right;
+
+  flash:
+    cmd: task flash-left && task flash-right
+
+  keymap-svg:
+    cmds:
+      - rm -f corne-keymap.yaml corne.svg && keymap parse -c 10 -z config/corne.keymap > corne-keymap.yaml
+      - keymap draw corne-keymap.yaml > corne.svg

@@ -1,0 +1,1058 @@
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/ext_power.h>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/outputs.h>
+
+#define ZMK_POINTING_DEFAULT_MOVE_VAL 1200  // default: 600
+#define ZMK_POINTING_DEFAULT_SCRL_VAL 40    // default: 10
+#include <dt-bindings/zmk/pointing.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <dt-bindings/zmk/rgb.h>
+
+#define BASE  0
+#define NAV   1
+#define NUM   2
+#define SYM   3
+#define FUN   4
+#define MEDIA 5
+#define MOUSE 6
+#define NSYM  7
+
+// Corne key positions (42 keys):
+// Row 0:  0  1  2  3  4  5    6  7  8  9  10  11
+// Row 1: 12 13 14 15 16 17   18 19 20 21  22  23
+// Row 2: 24 25 26 27 28 29   30 31 32 33  34  35
+// Thumb:          36 37 38   39 40 41
+
+&mt {
+    flavor = "tap-preferred";
+    tapping-term-ms = <175>;
+    quick-tap-ms = <175>;
+    require-prior-idle-ms = <50>;
+};
+
+&lt {
+    flavor = "tap-preferred";
+    tapping-term-ms = <175>;
+    quick-tap-ms = <175>;
+    require-prior-idle-ms = <50>;
+};
+
+// Mouse movement configuration
+&mmv {
+    time-to-max-speed-ms = <300>;
+    acceleration-exponent = <2>;
+};
+
+// Mouse scroll configuration
+&msc {
+    time-to-max-speed-ms = <750>;
+    acceleration-exponent = <1>;
+};
+
+&key_repeat {
+    usage-pages = <HID_USAGE_KEY HID_USAGE_CONSUMER>;
+};
+
+/ {
+    behaviors {
+        mt_fast: mt_fast {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <140>;
+            quick-tap-ms = <140>;
+            require-prior-idle-ms = <25>;
+            bindings = <&kp>, <&kp>;          // This makes it act exactly like 'mt'
+        };
+        mt_slow: mt_slow {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <250>;          // Your different timing here
+            quick-tap-ms = <250>;
+            require-prior-idle-ms = <100>;
+            bindings = <&kp>, <&kp>;          // This makes it act exactly like 'mt'
+        };
+        lt_fast: lt_fast {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <140>;
+            quick-tap-ms = <140>;
+            require-prior-idle-ms = <25>;
+            bindings = <&mo>, <&kp>;
+        };
+        lt_slow: lt_slow {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <250>;          // Your different timing here
+            quick-tap-ms = <250>;
+            require-prior-idle-ms = <135>;
+            bindings = <&mo>, <&kp>;          // This makes it act exactly like 'mt'
+        };
+
+        // // --- H MORPH LOGIC ---
+        // h_ctrl: h_ctrl {
+        //     compatible = "zmk,behavior-mod-morph";
+        //     #binding-cells = <0>;
+        //     bindings = <&kp H>, <&kp LC(LA(H))>; // Normal H vs Ctrl+Alt+H
+        //     mods = <(MOD_LCTL)>;
+        // };
+        //
+        // h_morph: h_morph {
+        //     compatible = "zmk,behavior-mod-morph";
+        //     #binding-cells = <0>;
+        //     bindings = <&h_ctrl>, <&kp LS(LA(H))>; // Shift+Alt+H if Shift held
+        //     mods = <(MOD_LSFT)>;
+        // };
+        //
+        // // --- L MORPH LOGIC ---
+        // l_ctrl: l_ctrl {
+        //     compatible = "zmk,behavior-mod-morph";
+        //     #binding-cells = <0>;
+        //     bindings = <&kp L>, <&kp LC(LA(L))>; // Normal L vs Ctrl+Alt+L
+        //     mods = <(MOD_LCTL)>;
+        // };
+        //
+        // l_morph: l_morph {
+        //     compatible = "zmk,behavior-mod-morph";
+        //     #binding-cells = <0>;
+        //     bindings = <&l_ctrl>, <&kp LS(LA(L))>; // Shift+Alt+L if Shift held
+        //     mods = <(MOD_LSFT)>;
+        // };
+
+        //td_space: tap_dance_space {
+        //    compatible = "zmk,behavior-tap-dance";
+        //    #binding-cells = <0>;
+        //    tapping-term-ms = <165>;
+        //    /* 1st tap: Layer-Tap (Hold = NAV, Tap = SPACE)
+        //       2nd tap: Layer action for SYM layer */
+        //    bindings = <&lt NAV SPACE>, <&sl SYM>;
+        //};
+
+        //td_quote: tap_dance_quote {
+        //    compatible = "zmk,behavior-tap-dance";
+        //    #binding-cells = <0>;
+        //    tapping-term-ms = <165>;
+        //    /* 1st tap: Single Quote (')
+        //       2nd tap: Grave / Backtick (`) */
+        //    bindings = <&kp SQT>, <&kp GRAVE>;
+        //};
+
+        /* 1. Custom Hold-Taps: 
+            Holds = Momentary Layer
+            Taps  = Space key
+        */
+        //lt_tap_hold: lt_tap_hold {
+        //    compatible = "zmk,behavior-hold-tap";
+        //    #binding-cells = <2>;
+        //    flavor = "tap-preferred";
+        //    //flavor = "hold-preferred";
+        //    tapping-term-ms = <40>;
+        //    //require-prior-idle-ms = <150>;
+        //    bindings = <&mo>, <&kp>; // First param = layer, Second param = keycode
+        //};
+
+        //mt_tap_hold: mt_tap_hold {
+        //    compatible = "zmk,behavior-hold-tap";
+        //    #binding-cells = <2>;
+        //    flavor = "tap-preferred";
+        //    //flavor = "hold-preferred";
+        //    tapping-term-ms = <40>;
+        //    //require-prior-idle-ms = <150>;
+        //    bindings = <&kp>, <&kp>; // First param = layer, Second param = keycode
+        //};
+
+        /* 2. Tap Dance:
+            1st action (Tap/Hold) -> Space on tap, NUM on hold
+            2nd action (Double-Tap) -> Permanently switch layer
+        */
+        //num_mouse_space: num_mouse_space {
+        //    compatible = "zmk,behavior-tap-dance";
+        //    #binding-cells = <0>;
+        //    tapping-term-ms = <150>;
+        //    bindings = <&lt_tap_hold NUM SPACE>, <&to MOUSE>;
+        //};
+
+        //num_lock: num_lock {
+        //    compatible = "zmk,behavior-tap-dance";
+        //    #binding-cells = <0>;
+        //    tapping-term-ms = <150>;
+        //    bindings = <&lt_tap_hold NUM SPACE>, <&to NUM>;
+        //};
+
+        //sft_mouse: sft_mouse {
+        //    compatible = "zmk,behavior-tap-dance";
+        //    #binding-cells = <0>;
+        //    tapping-term-ms = <150>;
+        //    bindings = <&mt_tap_hold LSHFT BSPC>, <&to FUN>;
+        //};
+
+        //nav_mouse: nav_mouse {
+        //    compatible = "zmk,behavior-tap-dance";
+        //    #binding-cells = <0>;
+        //    tapping-term-ms = <200>;
+        //    bindings = <&lt_tap_hold NAV DEL>, <&to MOUSE>;
+        //};
+
+        ht_ctrl_tog: hold_ctrl_tap_toggle {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <250>;
+            // The first binding is for hold (&kp), the second is for tap (&tog)
+            bindings = <&kp>, <&tog>; 
+        };
+
+        // 2. DEDICATED FAST NODES FOR TAPS
+        // These hit maximum velocity instantly, bypassing the ramp-up.
+        mmv_fast: mmv_fast {
+            compatible = "zmk,behavior-input-two-axis";
+            #binding-cells = <1>;
+            x-input-code = <INPUT_REL_X>;
+            y-input-code = <INPUT_REL_Y>;
+            time-to-max-speed-ms = <1>;
+            acceleration-exponent = <1>;
+        };
+
+        msc_fast: msc_fast {
+            compatible = "zmk,behavior-input-two-axis";
+            #binding-cells = <1>;
+            x-input-code = <INPUT_REL_HWHEEL>;
+            y-input-code = <INPUT_REL_WHEEL>;
+            time-to-max-speed-ms = <1>;
+            acceleration-exponent = <1>;
+        };
+
+        ht_mmv: ht_mmv {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <130>;
+            // Hold uses standard mmv, tap uses the 50ms macro
+            bindings = <&mmv>, <&mmv_tap_macro>;
+        };
+
+        ht_msc: ht_msc {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <130>;
+            // Hold uses standard msc, tap uses the 50ms macro
+            bindings = <&msc>, <&msc_tap_macro>;
+        };
+    };
+};
+
+/ {
+    combos {
+        compatible = "zmk,combos";
+
+        // f + j
+        combo_caps_word {
+            bindings = <&caps_word>;
+            key-positions = <16 19>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // j + k
+        combo_lctrl {
+            bindings = <&kp LCTRL>;
+            key-positions = <19 20>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // k + l
+        combo_lshft {
+            bindings = <&kp LSHFT>;
+            key-positions = <20 21>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // d + f
+        combo_alt {
+            bindings = <&kp LALT>;
+            key-positions = <15 16>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // j + k + l
+        combo_ctrl_shft {
+            bindings = <&kp LC(LSHFT)>;
+            key-positions = <19 20 21>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // s + d + f
+        combo_ctrl_shft_lft {
+            bindings = <&kp LC(LSHFT)>;
+            key-positions = <14 15 16>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // ctrl + tb
+        combo_ctrl_shft_alt {
+            bindings = <&kp LC(LSHFT)>;
+            key-positions = <37 12>;
+            timeout-ms = <90>;
+            require-prior-idle-ms = <30>;
+        };
+
+
+        // td + tf
+        combo_num_lock {
+            bindings = <&to NUM>;
+            key-positions = <39 41>;
+            timeout-ms = <75>;
+            require-prior-idle-ms = <75>;
+        };
+
+        /* // ta + tc
+        combo_sym_exclamation {
+            bindings = <&kp EXCL>;
+            key-positions = <0 38 39>;
+            timeout-ms = <50>;
+            require-prior-idle-ms = <40>;
+        }; */
+
+        // ta + tc
+        combo_sym_lock {
+            bindings = <&to SYM>;
+            key-positions = <36 38>;
+            timeout-ms = <75>;
+            require-prior-idle-ms = <75>;
+        };
+        /* combo_fn { */
+        /*     bindings = <&mo FUN>; */
+        /*     key-positions = <36 37>; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+
+        // td + te
+        /* combo_fun_lock {
+            bindings = <&to FUN>;
+            // key-positions = <39 41>;
+            key-positions = <39 40>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <45>;
+        }; */
+
+        // td + p
+        // combo_space_p {
+        //     bindings = <&space_p>;
+        //     key-positions = <39 10>;
+        //     timeout-ms = <60>;
+        //     require-prior-idle-ms = <45>;
+        // };
+        combo_lpar {
+            bindings = <&kp LPAR>;
+            key-positions = <38 8>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_rpar {
+            bindings = <&kp RPAR>;
+            key-positions = <38 9>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_lgui {
+            bindings = <&kp LGUI>;
+            key-positions = <31 32>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_lgui_alt {
+            bindings = <&kp LGUI>;
+            key-positions = <25 26>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_lgui_i {
+            bindings = <&kp LG(I)>;
+            key-positions = <7 8 9>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        /*
+        combo_minus {
+            bindings = <&kp MINUS>;
+            key-positions = <39 10>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_equal {
+            bindings = <&kp EQUAL>;
+            key-positions = <39 11>;
+            timeout-ms = <170>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_dollar {
+            bindings = <&kp DOLLAR>;
+            key-positions = <38 3>;
+            timeout-ms = <170>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_caret {
+            bindings = <&kp CARET>;
+            key-positions = <38 5>;
+            timeout-ms = <170>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_underscore {
+            bindings = <&kp UNDERSCORE>;
+            key-positions = <38 10>;
+            timeout-ms = <170>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_plus {
+            bindings = <&kp PLUS>;
+            key-positions = <38 11>;
+            timeout-ms = <170>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_lcurly {
+            bindings = <&kp LS(LBKT)>;
+            key-positions = <38 15>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_rcurly {
+            bindings = <&kp LS(RBKT)>;
+            key-positions = <38 16>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_lbkt {
+            bindings = <&kp LBKT>;
+            key-positions = <39 15>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+        combo_rbkt {
+            bindings = <&kp RBKT>;
+            key-positions = <39 16>;
+            timeout-ms = <60>;
+            require-prior-idle-ms = <30>;
+        };
+
+        // te + p
+        /* combo_underscore { */
+        /*     bindings = <&kp UNDERSCORE>; */
+        /*     key-positions = <40 10>; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+
+        // tc + td
+        combo_shift_enter {
+            bindings = <&kp LS(RET)>;
+            key-positions = <38 39>;
+            timeout-ms = <90>;
+            require-prior-idle-ms = <30>;
+        };
+
+        // tc + td + te
+        combo_alt_shift_enter {
+            bindings = <&kp LS(LA(RET))>;
+            key-positions = <38 39 40>;
+            timeout-ms = <120>;
+            require-prior-idle-ms = <30>;
+        };
+
+        // ta + tf
+        combo_nav_lctr_mouse {
+            bindings = <&ht_ctrl_tog LCTRL MOUSE>;
+            key-positions = <36 41>;
+            timeout-ms = <150>;
+            require-prior-idle-ms = <30>;
+        };
+
+        // shft + ta
+        combo_nav_shft {
+            bindings = <&kp LS(LALT)>;
+            key-positions = <36 24>;
+            timeout-ms = <120>;
+            require-prior-idle-ms = <30>;
+        };
+
+        // ctrl + ta
+        combo_nav_ctrl {
+            bindings = <&kp LC(LALT)>;
+            key-positions = <36 12>;
+            timeout-ms = <120>;
+            require-prior-idle-ms = <30>;
+        };
+
+        // c + v
+        combo_visual {
+            bindings = <&kp LS(V)>;
+            key-positions = <27 28>;
+            timeout-ms = <70>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // o + p
+        /* combo_term_paste {
+            bindings = <&kp LA(P)>;
+            key-positions = <9 10>;
+            timeout-ms = <58>;
+            require-prior-idle-ms = <65>;
+        }; */
+
+        // j + b
+        combo_next_tab {
+            bindings = <&kp LC(TAB)>;
+            key-positions = <29 19> ;
+            timeout-ms = <70>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // j + v
+        combo_prev_tab {
+            bindings = <&kp LC(LS(TAB))>;
+            key-positions = <28 19> ;
+            timeout-ms = <70>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // q + j
+        combo_quit {
+            bindings = <&kp LC(Q)>;
+            key-positions = <1 19> ;
+            timeout-ms = <70>;
+            require-prior-idle-ms = <45>;
+        };
+
+        /* // w + j */
+        /* combo_del_word { */
+        /*     bindings = <&kp LC(W)>; */
+        /*     key-positions = <2 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // r + j */
+        /* combo_redo { */
+        /*     bindings = <&kp LC(R)>; */
+        /*     key-positions = <4 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+
+        // ta + r
+        /* combo_redo_ctrl {
+            bindings = <&kp LC(R)>;
+            key-positions = <4 36> ;
+            timeout-ms = <90>;
+            require-prior-idle-ms = <65>;
+        }; */
+
+        // tab + q
+        combo_mouse {
+            bindings = <&mo MOUSE>;
+            key-positions = <0 1> ;
+            timeout-ms = <110>;
+            require-prior-idle-ms = <25>;
+        };
+
+        // tab + ctrl
+        combo_mouse_alt {
+            bindings = <&mo MOUSE>;
+            key-positions = <0 12> ;
+            timeout-ms = <110>;
+            require-prior-idle-ms = <25>;
+        };
+
+        /* // m + t */
+        /* combo_new_tab { */
+        /*     bindings = <&kp LC(T)>; */
+        /*     key-positions = <5 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + b */
+        /* combo_word_back { */
+        /*     bindings = <&kp LC(B)>; */
+        /*     key-positions = <29 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+
+        // te + v
+        combo_tmux_vim_mode {
+            bindings = <&kp LA(V)>;
+            key-positions = <28 40>;
+            timeout-ms = <80>;
+            require-prior-idle-ms = <35>;
+        };
+        // td + te + v
+        combo_term_vim_mode {
+            bindings = <&kp LS(LA(V))>;
+            key-positions = <28 39 40>;
+            timeout-ms = <80>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + j
+        combo_nvim_dwn {
+            bindings = <&kp LA(J)>;
+            key-positions = <19 40>;
+            timeout-ms = <80>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + k
+        combo_nvim_up {
+            bindings = <&kp LA(K)>;
+            key-positions = <20 40>;
+            timeout-ms = <80>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + h
+        combo_nvim_lft {
+            bindings = <&kp LA(H)>;
+            key-positions = <18 40>;
+            timeout-ms = <80>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + l
+        combo_nvim_ryt {
+            bindings = <&kp LA(L)>;
+            key-positions = <21 40>;
+            timeout-ms = <80>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + p
+        combo_nvim_ins_paste {
+            bindings = <&kp LA(P)>;
+           key-positions = <10 40>;
+           timeout-ms = <110>;
+           require-prior-idle-ms = <30>;
+        };
+        // combo_vim_paste_ahead {
+        //     bindings = <&kp LS(P)>;
+        //     key-positions = <27 40>;
+        //     timeout-ms = <68>;
+        //     require-prior-idle-ms = <45>;
+        // };
+
+        /* // m + v */
+        /* combo_paste { */
+        /*     bindings = <&kp LC(V)>; */
+        /*     key-positions = <28 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + c */
+        /* combo_copy { */
+        /*     bindings = <&kp LC(C)>; */
+        /*     key-positions = <27 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + x */
+        /* combo_cut { */
+        /*     bindings = <&kp LC(X)>; */
+        /*     key-positions = <26 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + z */
+        /* combo_undo { */
+        /*     bindings = <&kp LC(Z)>; */
+        /*     key-positions = <25 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + k */
+        /* combo_search { */
+        /*     bindings = <&kp LC(K)>; */
+        /*     key-positions = <20 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + s */
+        /* combo_save { */
+        /*     bindings = <&kp LC(S)>; */
+        /*     key-positions = <14 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + l */
+        /* combo_browser_addr { */
+        /*     bindings = <&kp LC(L)>; */
+        /*     key-positions = <21 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + i */
+        /* combo_browser_inspect { */
+        /*     bindings = <&kp LC(LS(I))>; */
+        /*     key-positions = <8 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + f */
+        /* combo_find { */
+        /*     bindings = <&kp LC(F)>; */
+        /*     key-positions = <16 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + d */
+        /* combo_word_del { */
+        /*     bindings = <&kp LC(D)>; */
+        /*     key-positions = <15 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /**/
+        /* // m + a */
+        /* combo_sel_all { */
+        /*     bindings = <&kp LC(A)>; */
+        /*     key-positions = <13 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /* combo_new { */
+        /*     bindings = <&kp LC(N)>; */
+        /*     key-positions = <30 31> ; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+        /* combo_colon { */
+        /*     bindings = <&kp COLON>; */
+        /*     key-positions = <39 22>; */
+        /*     timeout-ms = <68>; */
+        /*     require-prior-idle-ms = <45>; */
+        /* }; */
+
+        // l + ;
+        combo_colon_right {
+            bindings = <&kp COLON>;
+            key-positions = <21 22>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + ,
+        combo_less_than {
+            bindings = <&kp LS(COMMA)>;
+            key-positions = <32 40>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + .
+        combo_greater_than {
+            bindings = <&kp LS(DOT)>;
+            key-positions = <33 40>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + /
+        combo_question {
+            bindings = <&kp LS(FSLH)>;
+            key-positions = <34 40>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // te + backslash
+        combo_pipe {
+            bindings = <&kp LS(BSLH)>;
+            key-positions = <11 40>;
+            timeout-ms = <80>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // ; + '
+        combo_quote_right {
+            bindings = <&kp LS(SQT)>;
+            key-positions = <22 23>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // l + '
+        combo_grave_right {
+            bindings = <&kp GRAVE>;
+            key-positions = <21 23>;
+            timeout-ms = <68>;
+            require-prior-idle-ms = <35>;
+        };
+
+        // // ls + ta
+        // combo_alt_ctrl {
+        //     bindings = <&kp LC(LALT)>;
+        //     key-positions = <24 36>;
+        //     timeout-ms = <90>;
+        //     require-prior-idle-ms = <50>;
+        // };
+        //
+        // // lc + ta
+        // combo_alt_shift {
+        //     bindings = <&kp LS(LALT)>;
+        //     key-positions = <12 36>;
+        //     timeout-ms = <90>;
+        //     require-prior-idle-ms = <50>;
+        // };
+    };
+
+    macros {
+        hyper: hyper {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings =
+                <&macro_press &kp LGUI &kp LALT &kp LCTRL &kp LSHFT>,
+                <&macro_pause_for_release>,
+                <&macro_release &kp LGUI &kp LALT &kp LCTRL &kp LSHFT>;
+        };
+
+        spam_click: spam_click {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <28>;  // Time between clicks
+            tap-ms = <28>;   // Duration of the click down-state
+            bindings = 
+                <&mkp LCLK>,
+                <&mkp LCLK>,
+                // <&mkp LCLK>,
+                // <&mkp LCLK>,
+                <&mkp LCLK>; // Adds a 5-click burst
+        };
+
+       mmv_tap_macro: mmv_tap_macro {
+            compatible = "zmk,behavior-macro-one-param";
+            #binding-cells = <1>;
+            bindings = 
+                <&macro_param_1to1>,
+                <&macro_press &mmv_fast 0>,
+                <&macro_wait_time 500>,      // 50ms of instant max speed
+                <&macro_param_1to1>,
+                <&macro_release &mmv_fast 0>;
+        };
+
+        msc_tap_macro: msc_tap_macro {
+            compatible = "zmk,behavior-macro-one-param";
+            #binding-cells = <1>;
+            bindings = 
+                <&macro_param_1to1>,
+                <&macro_press &msc_fast 0>,
+                <&macro_wait_time 500>,      // 50ms of instant max scroll
+                <&macro_param_1to1>,
+                <&macro_release &msc_fast 0>;
+        };
+        // prev diagnostic nvim
+        lbkt_d: lbkt_d {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LBKT>, <&kp D>;
+        };
+
+        // next diagnostic nvim
+        rbkt_d: rbkt_d {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp RBKT>, <&kp D>;
+        };
+
+        /* space_p: space_p {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp SPACE>, <&kp P>;
+        }; */
+
+        // diagnostic under cursor nvim
+        ctrl_w_d: ctrl_w_d {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(W)>, <&kp D>;
+        };
+    };
+
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        base_layer {
+            display-name = "HOME";
+            bindings = <
+//    ┌──────────────────┬───┬───┬─────────────────┬──────┬─────────────────┐   ┌─────────────────┬───────────────────┬────────────────────┬───┬───┬───┐
+//    │ lt_slow FUN tab  │ Q │ W │        E        │  R   │        T        │   │        Y        │         U         │         I          │ O │ P │ \ │
+//    ├──────────────────┼───┼───┼─────────────────┼──────┼─────────────────┤   ├─────────────────┼───────────────────┼────────────────────┼───┼───┼───┤
+//    │ mt_slow lctl esc │ A │ S │        D        │  F   │        G        │   │        H        │         J         │         K          │ L │ ; │ ' │
+//    ├──────────────────┼───┼───┼─────────────────┼──────┼─────────────────┤   ├─────────────────┼───────────────────┼────────────────────┼───┼───┼───┤
+//    │       lsft       │ Z │ X │        C        │  V   │        B        │   │        N        │         M         │         ,          │ . │ / │ ` │
+//    └──────────────────┴───┴───┼─────────────────┼──────┼─────────────────┤   ├─────────────────┼───────────────────┼────────────────────┼───┴───┴───┘
+//                               │ lt_fast NAV del │ lsft │ lt_fast SYM ent │   │ lt_fast NUM spc │ mt_fast lalt bspc │ lt_fast MEDIA lctl │
+//                               └─────────────────┴──────┴─────────────────┘   └─────────────────┴───────────────────┴────────────────────┘
+  &lt_slow FUN TAB     &kp Q   &kp W   &kp E              &kp R       &kp T                  &kp Y                &kp U                &kp I                  &kp O     &kp P      &kp BSLH
+  &mt_slow LCTRL ESC   &kp A   &kp S   &kp D              &kp F       &kp G                  &kp H                &kp J                &kp K                  &kp L     &kp SEMI   &kp SQT
+  &kp LSHFT            &kp Z   &kp X   &kp C              &kp V       &kp B                  &kp N                &kp M                &kp COMMA              &kp DOT   &kp FSLH   &kp GRAVE
+                                       &lt_fast NAV DEL   &kp LSHFT   &lt_fast SYM RET       &lt_fast NUM SPACE   &mt_fast LALT BSPC   &lt_fast MEDIA LCTRL
+            >;
+        };
+
+        nav_layer {
+            display-name = "NAV";
+            bindings = <
+//    ┌────────────┬──────┬──────┬─────────┬──────┬─────────┐   ┌──────┬──────┬──────┬─────┬────────────┬──────┐
+//    │            │      │      │         │      │         │   │ home │ pgdn │ pgup │ end │            │ pscr │
+//    ├────────────┼──────┼──────┼─────────┼──────┼─────────┤   ├──────┼──────┼──────┼─────┼────────────┼──────┤
+//    │ lctl(lalt) │ lgui │ lalt │  lsft   │ lctl │         │   │      │      │      │     │ lsft(caps) │      │
+//    ├────────────┼──────┼──────┼─────────┼──────┼─────────┤   ├──────┼──────┼──────┼─────┼────────────┼──────┤
+//    │ lsft(lalt) │      │      │         │      │         │   │ lgui │      │      │     │            │      │
+//    └────────────┴──────┴──────┼─────────┼──────┼─────────┤   ├──────┼──────┼──────┼─────┴────────────┴──────┘
+//                               │ to BASE │ lalt │ to BASE │   │      │ keyr │ lctl │
+//                               └─────────┴──────┴─────────┘   └──────┴──────┴──────┘
+  &none          &none      &none      &none       &none       &none          &kp HOME   &kp PG_DN     &kp PG_UP   &kp END   &none          &kp PRINTSCREEN
+  &kp LC(LALT)   &kp LGUI   &kp LALT   &kp LSHFT   &kp LCTRL   &none          &trans     &trans        &trans      &trans    &kp LS(CAPS)   &trans
+  &kp LS(LALT)   &none      &none      &none       &none       &none          &kp LGUI   &none         &none       &none     &none          &trans
+                                       &to BASE    &kp LALT    &to BASE       &trans     &key_repeat   &kp LCTRL
+            >;
+        };
+
+
+  //&trans   &kp LS(A)   &kp LS(S)   &kp LS(D)   &kp LS(F)   &kp LS(G)       &kp LS(H)   &kp LS(J)   &kp LS(K)       &kp LS(L)     &mt LGUI SEMI   &kp GRAVE
+  //&trans   &kp LS(Z)   &kp LS(X)   &kp LS(C)   &kp LS(V)   &kp LS(B)       &kp LS(N)   &kp LS(M)   &kp LS(COMMA)   &kp LS(DOT)   &kp LS(FSLH)    &trans
+        num_layer {
+            display-name = "NUM";
+            bindings = <
+//    ┌─────┬──────┬─────┬─────────┬─────┬─────────┐   ┌──────┬──────┬──────┬──────┬────────────┬─────┐
+//    │  1  │  2   │  3  │    4    │  5  │    6    │   │  7   │  8   │  9   │  0   │     -      │  =  │
+//    ├─────┼──────┼─────┼─────────┼─────┼─────────┤   ├──────┼──────┼──────┼──────┼────────────┼─────┤
+//    │     │ lgui │     │    [    │  ]  │         │   │ left │ down │  up  │ rght │ lsft(caps) │  `  │
+//    ├─────┼──────┼─────┼─────────┼─────┼─────────┤   ├──────┼──────┼──────┼──────┼────────────┼─────┤
+//    │     │      │     │         │     │         │   │ lgui │  [   │  ]   │      │            │     │
+//    └─────┴──────┴─────┼─────────┼─────┼─────────┤   ├──────┼──────┼──────┼──────┴────────────┴─────┘
+//                       │ to BASE │     │ mo NSYM │   │      │      │ lctl │
+//                       └─────────┴─────┴─────────┘   └──────┴──────┴──────┘
+  &kp N1   &kp N2     &kp N3   &kp N4     &kp N5     &kp N6         &kp N7     &kp N8     &kp N9      &kp N0      &kp MINUS      &kp EQUAL
+  &trans   &kp LGUI   &trans   &kp LBKT   &kp RBKT   &none          &kp LEFT   &kp DOWN   &kp UP      &kp RIGHT   &kp LS(CAPS)   &kp GRAVE
+  &trans   &trans     &trans   &trans     &trans     &trans         &kp LGUI   &kp LBKT   &kp RBKT    &trans      &trans         &trans
+                               &to BASE   &trans     &mo NSYM       &trans     &trans     &kp LCTRL
+            >;
+        };
+
+        sym_layer {
+            display-name = "SYM";
+            bindings = <
+//    ┌─────┬──────┬─────┬─────────┬─────────┬─────────┐   ┌─────────────────┬─────────┬─────────┬───────────┬────────────┬─────────┐
+//    │  !  │  @   │  #  │    $    │    %    │    ^    │   │        &        │    *    │    (    │     )     │     _      │    +    │
+//    ├─────┼──────┼─────┼─────────┼─────────┼─────────┤   ├─────────────────┼─────────┼─────────┼───────────┼────────────┼─────────┤
+//    │     │ lgui │     │ lsft([) │ lsft(]) │         │   │      left       │  down   │   up    │   rght    │ lsft(caps) │ lsft(`) │
+//    ├─────┼──────┼─────┼─────────┼─────────┼─────────┤   ├─────────────────┼─────────┼─────────┼───────────┼────────────┼─────────┤
+//    │     │      │     │         │         │         │   │      lgui       │ &lbkt_d │ &rbkt_d │ &ctrl_w_d │            │         │
+//    └─────┴──────┴─────┼─────────┼─────────┼─────────┤   ├─────────────────┼─────────┼─────────┼───────────┴────────────┴─────────┘
+//                       │ to BASE │         │ to BASE │   │ lt_fast NUM spc │         │  lctl   │
+//                       └─────────┴─────────┴─────────┘   └─────────────────┴─────────┴─────────┘
+  &kp EXCL   &kp AT     &kp HASH   &kp DOLLAR     &kp PERCENT    &kp CARET       &kp AMPS             &kp STAR   &kp LPAR    &kp RPAR    &kp UNDERSCORE   &kp PLUS
+  &trans     &kp LGUI   &trans     &kp LS(LBKT)   &kp LS(RBKT)   &trans          &kp LEFT             &kp DOWN   &kp UP      &kp RIGHT   &kp LS(CAPS)     &kp LS(GRAVE)
+  &trans     &trans     &trans     &trans         &trans         &trans          &kp LGUI             &lbkt_d    &rbkt_d     &ctrl_w_d   &trans           &trans
+                                   &to BASE       &trans         &to BASE        &lt_fast NUM SPACE   &trans     &kp LCTRL
+            >;
+        };
+
+        fun_layer {
+            display-name = "F(x)";
+            bindings = <
+//    ┌─────┬─────┬─────┬─────────┬─────────┬─────────┐   ┌─────────┬──────┬──────┬──────┬──────┬─────┐
+//    │ f1  │ f2  │ f3  │   f4    │   f5    │   f6    │   │   f7    │  f8  │  f9  │ f10  │ f11  │ f12 │
+//    ├─────┼─────┼─────┼─────────┼─────────┼─────────┤   ├─────────┼──────┼──────┼──────┼──────┼─────┤
+//    │     │     │     │ lsft([) │ lsft(]) │         │   │  left   │ down │  up  │ rght │ caps │  `  │
+//    ├─────┼─────┼─────┼─────────┼─────────┼─────────┤   ├─────────┼──────┼──────┼──────┼──────┼─────┤
+//    │     │     │     │         │         │         │   │  lgui   │      │      │      │      │     │
+//    └─────┴─────┴─────┼─────────┼─────────┼─────────┤   ├─────────┼──────┼──────┼──────┴──────┴─────┘
+//                      │ to BASE │         │ to BASE │   │ to BASE │      │ lctl │
+//                      └─────────┴─────────┴─────────┘   └─────────┴──────┴──────┘
+  &kp F1   &kp F2   &kp F3   &kp F4         &kp F5         &kp F6         &kp F7     &kp F8     &kp F9      &kp F10     &kp F11    &kp F12
+  &trans   &trans   &trans   &kp LS(LBKT)   &kp LS(RBKT)   &none          &kp LEFT   &kp DOWN   &kp UP      &kp RIGHT   &kp CAPS   &kp GRAVE
+  &trans   &trans   &trans   &trans         &trans         &trans         &kp LGUI   &trans     &trans      &trans      &trans     &trans
+                             &to BASE       &trans         &to BASE       &to BASE   &trans     &kp LCTRL
+            >;
+        };
+
+        media_layer {
+            display-name = "MEDIA";
+            bindings = <
+//    ┌──────────┬──────────┬──────────┬────────────┬────────────┬─────────┐   ┌─────────┬───────────────────┬─────────┬─────────┬────────────────┬───────────┐
+//    │ ug_ eff  │          │ ug_ hu-  │  ug_ hu+   │  ug_ sa-   │ ug_ sa+ │   │ ug_ br- │      ug_ br+      │ ug_ sp- │ ug_ sp+ │    ug_ tog     │ out_ tog  │
+//    ├──────────┼──────────┼──────────┼────────────┼────────────┼─────────┤   ├─────────┼───────────────────┼─────────┼─────────┼────────────────┼───────────┤
+//    │ bt_sel 0 │ bt_sel 1 │ bt_sel 2 │  bt_sel 3  │  bt_sel 4  │ bt_clr  │   │  prev   │ mt_slow mute vold │  volu   │  next   │ &studio_unlock │   bspc    │
+//    ├──────────┼──────────┼──────────┼────────────┼────────────┼─────────┤   ├─────────┼───────────────────┼─────────┼─────────┼────────────────┼───────────┤
+//    │   app    │   bri-   │   bri+   │ lctl(bri-) │ lctl(bri+) │         │   │   rec   │       stop        │  play   │  mute   │   bt_clr_ALL   │ epwr_ tog │
+//    └──────────┴──────────┴──────────┼────────────┼────────────┼─────────┤   ├─────────┼───────────────────┼─────────┼─────────┴────────────────┴───────────┘
+//                                     │  to BASE   │            │         │   │ to BASE │                   │  lctl   │
+//                                     └────────────┴────────────┴─────────┘   └─────────┴───────────────────┴─────────┘
+  &rgb_ug RGB_EFF   &none          &rgb_ug RGB_HUD   &rgb_ug RGB_HUI    &rgb_ug RGB_SAD    &rgb_ug RGB_SAI       &rgb_ug RGB_BRD   &rgb_ug RGB_BRI            &rgb_ug RGB_SPD   &rgb_ug RGB_SPI   &rgb_ug RGB_TOG   &out OUT_TOG
+  &bt BT_SEL 0      &bt BT_SEL 1   &bt BT_SEL 2      &bt BT_SEL 3       &bt BT_SEL 4       &bt BT_CLR            &kp C_PREV        &mt_slow C_MUTE C_VOL_DN   &kp C_VOL_UP      &kp C_NEXT        &studio_unlock    &kp BSPC
+  &kp K_APP         &kp C_BRI_DN   &kp C_BRI_UP      &kp LC(C_BRI_DN)   &kp LC(C_BRI_UP)   &none                 &kp C_REC         &kp C_STOP                 &kp C_PP          &kp C_MUTE        &bt BT_CLR_ALL    &ext_power EP_TOG
+                                                     &to BASE           &trans             &trans                &to BASE          &trans                     &kp LCTRL
+            >;
+        };
+
+        mouse_layer {
+            display-name = "MOUSE";
+            bindings = <
+//    ┌─────┬──────┬──────┬─────────┬──────┬─────────────┐   ┌────────────────┬────────────────┬──────────────┬────────────────┬──────┬─────┐
+//    │     │ rclk │ mbck │  mfwd   │ lclk │ &spam_click │   │      lclk      │      mbck      │     mfwd     │      rclk      │ mclk │     │
+//    ├─────┼──────┼──────┼─────────┼──────┼─────────────┤   ├────────────────┼────────────────┼──────────────┼────────────────┼──────┼─────┤
+//    │     │ lgui │ lalt │  lctl   │ lsft │             │   │ &mmv MOVE_left │ &mmv MOVE_down │ &mmv MOVE_up │ &mmv MOVE_rght │      │     │
+//    ├─────┼──────┼──────┼─────────┼──────┼─────────────┤   ├────────────────┼────────────────┼──────────────┼────────────────┼──────┼─────┤
+//    │     │      │      │         │      │             │   │ &msc SCRL_left │ &msc SCRL_down │ &msc SCRL_up │ &msc SCRL_rght │      │     │
+//    └─────┴──────┴──────┼─────────┼──────┼─────────────┤   ├────────────────┼────────────────┼──────────────┼────────────────┴──────┴─────┘
+//                        │ to BASE │      │   to BASE   │   │      lclk      │                │     lctl     │
+//                        └─────────┴──────┴─────────────┘   └────────────────┴────────────────┴──────────────┘
+  &trans   &mkp RCLK   &mkp MB4   &mkp MB5    &mkp LCLK   &spam_click       &mkp LCLK        &mkp MB4         &mkp MB5       &mkp RCLK         &mkp MCLK   &trans
+  &trans   &kp LGUI    &kp LALT   &kp LCTRL   &kp LSHFT   &none             &mmv MOVE_LEFT   &mmv MOVE_DOWN   &mmv MOVE_UP   &mmv MOVE_RIGHT   &trans      &trans
+  &trans   &none       &none      &none       &none       &none             &msc SCRL_LEFT   &msc SCRL_DOWN   &msc SCRL_UP   &msc SCRL_RIGHT   &trans      &trans
+                                  &to BASE    &none       &to BASE          &mkp LCLK        &trans           &kp LCTRL
+            >;
+        };
+
+        num_sym_layer {
+            display-name = "NSYM";
+            bindings = <
+//    ┌─────┬─────┬─────┬─────┬─────┬─────┐   ┌─────┬─────┬─────┬─────┬─────┬─────┐
+//    │  !  │  @  │  #  │  $  │  %  │  ^  │   │  &  │  *  │  (  │  )  │  -  │  =  │
+//    ├─────┼─────┼─────┼─────┼─────┼─────┤   ├─────┼─────┼─────┼─────┼─────┼─────┤
+//    │     │     │     │     │     │     │   │     │     │     │     │     │     │
+//    ├─────┼─────┼─────┼─────┼─────┼─────┤   ├─────┼─────┼─────┼─────┼─────┼─────┤
+//    │     │     │     │     │     │     │   │     │     │     │     │     │     │
+//    └─────┴─────┴─────┼─────┼─────┼─────┤   ├─────┼─────┼─────┼─────┴─────┴─────┘
+//                      │     │     │     │   │     │     │     │
+//                      └─────┴─────┴─────┘   └─────┴─────┴─────┘
+  &kp EXCL   &kp AT   &kp HASH   &kp DLLR   &kp PRCNT   &kp CARET       &kp AMPS   &kp ASTRK   &kp LPAR   &kp RPAR   &kp MINUS   &kp EQUAL
+  &trans     &trans   &trans     &trans     &trans      &trans          &trans     &trans      &trans     &trans     &trans      &trans
+  &trans     &trans   &trans     &trans     &trans      &trans          &trans     &trans      &trans     &trans     &trans      &trans
+                                 &trans     &trans      &trans          &trans     &trans      &trans
+            >;
+        };
+    };
+};

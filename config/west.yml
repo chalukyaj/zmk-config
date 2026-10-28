@@ -4,11 +4,24 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
+      # revision: release-please--branches--main
     # Additional modules containing boards/shields/custom code can be listed here as well
     # See https://docs.zephyrproject.org/3.2.0/develop/west/manifest.html#projects
+
+    - name: osoc
+      url-base: https://gitlab.com/open-source-open-colab
   projects:
     - name: zmk
       remote: zmkfirmware
       import: app/west.yml
+      revision: 4dd95d7840eb3d5a3f59bb29fbf1ab054715ef85 # a commit ahead from `release-please--branches--main` branch which is the pre release for zmk 0.4
+
+    - name: zmk-nice-oled
+      remote: osoc
+      revision: main
+
+    - name: zmk-intelli-keypress-events
+      remote: osoc
+      revision: main
   self:
     path: config
